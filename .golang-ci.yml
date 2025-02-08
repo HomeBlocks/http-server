@@ -1,0 +1,92 @@
+run:
+  timeout: 5m
+
+output:
+  formats:
+    - format: colored-tab
+      path: stderr
+    - format: code-climate
+      path: ../gl-code-quality-report.json
+  print-issued-lines: false
+  sort-results: true
+  uniq-by-line: false
+  path-prefix: src
+
+linters:
+  disable-all: true
+  enable:
+    - asciicheck
+    - bidichk
+    - bodyclose
+    - dogsled
+    - dupl
+    - errcheck
+    - errname
+    - funlen
+    - gci
+    - gocognit
+    - gocritic
+    - gocyclo
+    - gofmt
+    - gosec
+    - gosimple
+    - govet
+    - grouper
+    - ineffassign
+    - lll
+    - makezero
+    - mnd
+    - nakedret
+    - nilnil
+    - nlreturn
+    - paralleltest
+    - prealloc
+    - predeclared
+    - revive
+    - staticcheck
+    - stylecheck
+    - unparam
+    - unused
+    - varnamelen
+    - whitespace
+    - wsl
+
+linters-settings:
+  gosec:
+    excludes:
+      - G115
+  errcheck:
+    check-blank: true
+    check-type-assertions: true
+    exclude-functions:
+      - strconv.ParseUint
+  funlen:
+    lines: 60
+    statements: 40
+  gocognit:
+    min-complexity: 15
+  gocyclo:
+    min-complexity: 15
+  varnamelen:
+    ignore-names:
+      - id
+    ignore-decls:
+      - ok bool
+  wrapcheck:
+    ignorePackageGlobs:
+      - github.com/pkg/errors
+      - golang.org/x/sync/errgroup
+      - google.golang.org/grpc/status
+
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - varnamelen
+        - gocognit
+    - path: main\.go
+      linters:
+        - funlen
+        - lll
