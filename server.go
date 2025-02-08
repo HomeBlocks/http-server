@@ -20,8 +20,7 @@ type HandlerFunc func(Context) error
 type MiddlewareFunc func(HandlerFunc) HandlerFunc
 
 type Config struct {
-	Addr      string
-	SecretKey string
+	Addr string
 }
 
 type Server struct {
