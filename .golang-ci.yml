@@ -9,7 +9,6 @@ output:
       path: ../gl-code-quality-report.json
   print-issued-lines: false
   sort-results: true
-  uniq-by-line: false
   path-prefix: src
 
 linters:
@@ -80,6 +79,7 @@ linters-settings:
 
 
 issues:
+  uniq-by-line: true
   exclude-rules:
     - path: _test\.go
       linters:
