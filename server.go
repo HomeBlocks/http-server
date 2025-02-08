@@ -115,8 +115,8 @@ func NewServer(config Config, logger *zap.Logger) *Server {
 	echoServer := echo.New()
 	echoServer.HideBanner = true
 	echoServer.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		Skipper:        nil,
-		BeforeNextFunc: nil,
+		LogURI:    true,
+		LogStatus: true,
 		LogValuesFunc: func(_ echo.Context, v middleware.RequestLoggerValues) error {
 			logger.Info("request",
 				zap.String("URI", v.URI),
@@ -125,25 +125,7 @@ func NewServer(config Config, logger *zap.Logger) *Server {
 
 			return nil
 		},
-		HandleError:      true,
-		LogLatency:       false,
-		LogProtocol:      false,
-		LogRemoteIP:      false,
-		LogHost:          false,
-		LogMethod:        false,
-		LogURI:           true,
-		LogURIPath:       false,
-		LogRoutePath:     false,
-		LogRequestID:     false,
-		LogReferer:       false,
-		LogUserAgent:     false,
-		LogStatus:        true,
-		LogError:         false,
-		LogContentLength: false,
-		LogResponseSize:  false,
-		LogHeaders:       nil,
-		LogQueryParams:   nil,
-		LogFormValues:    nil,
+		HandleError: true,
 	}))
 	echoServer.Use(middleware.Recover())
 
