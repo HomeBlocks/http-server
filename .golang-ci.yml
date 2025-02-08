@@ -9,48 +9,25 @@ output:
       path: ../gl-code-quality-report.json
   print-issued-lines: false
   sort-results: true
-  path-prefix: src
 
 linters:
-  disable-all: true
-  enable:
-    - asciicheck
-    - bidichk
-    - bodyclose
-    - dogsled
-    - dupl
-    - errcheck
-    - errname
-    - funlen
-    - gci
-    - gocognit
-    - gocritic
-    - gocyclo
-    - gofmt
-    - gosec
-    - gosimple
-    - govet
-    - grouper
-    - ineffassign
-    - lll
-    - makezero
-    - mnd
-    - nakedret
-    - nilnil
-    - nlreturn
-    - paralleltest
-    - prealloc
-    - predeclared
-    - revive
-    - staticcheck
-    - stylecheck
-    - unparam
-    - unused
-    - varnamelen
-    - whitespace
-    - wsl
+  enable-all: true
+  disable:
+    - exhaustruct
+    - exportloopref
+    - depguard
 
 linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: warning
+    rules:
+      - name: atomic
+      - name: line-length-limit
+        severity: error
+        arguments: [ 120 ]
+      - name: unhandled-error
+        arguments: [ "fmt.Printf", "myFunction" ]
   gosec:
     excludes:
       - G115
@@ -77,7 +54,6 @@ linters-settings:
       - golang.org/x/sync/errgroup
       - google.golang.org/grpc/status
 
-
 issues:
   uniq-by-line: true
   exclude-rules:
@@ -86,7 +62,3 @@ issues:
         - funlen
         - varnamelen
         - gocognit
-    - path: main\.go
-      linters:
-        - funlen
-        - lll

@@ -4,9 +4,9 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/pkg/errors"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
 )
@@ -44,7 +44,7 @@ func (s *Server) OnStart(_ context.Context) error {
 func (s *Server) OnStop(ctx context.Context) error {
 	err := s.server.Shutdown(ctx)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "HTTPServer.OnStop")
 	}
 
 	return nil
@@ -111,12 +111,12 @@ func (s *Server) Echo() *echo.Echo {
 	return s.server
 }
 
-func NewServer(config Config, validate *validator.Validate, logger *zap.Logger) *Server {
+func NewServer(config Config, logger *zap.Logger) *Server {
 	echoServer := echo.New()
 	echoServer.HideBanner = true
 	echoServer.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
-		LogURI:    true,
-		LogStatus: true,
+		Skipper:        nil,
+		BeforeNextFunc: nil,
 		LogValuesFunc: func(_ echo.Context, v middleware.RequestLoggerValues) error {
 			logger.Info("request",
 				zap.String("URI", v.URI),
@@ -125,22 +125,31 @@ func NewServer(config Config, validate *validator.Validate, logger *zap.Logger) 
 
 			return nil
 		},
-		HandleError: true,
+		HandleError:      true,
+		LogLatency:       false,
+		LogProtocol:      false,
+		LogRemoteIP:      false,
+		LogHost:          false,
+		LogMethod:        false,
+		LogURI:           true,
+		LogURIPath:       false,
+		LogRoutePath:     false,
+		LogRequestID:     false,
+		LogReferer:       false,
+		LogUserAgent:     false,
+		LogStatus:        true,
+		LogError:         false,
+		LogContentLength: false,
+		LogResponseSize:  false,
+		LogHeaders:       nil,
+		LogQueryParams:   nil,
+		LogFormValues:    nil,
 	}))
 	echoServer.Use(middleware.Recover())
-	echoServer.Validator = &customValidator{validator: validate}
 
 	return &Server{
 		config: config,
 		server: echoServer,
 		logger: logger,
 	}
-}
-
-type customValidator struct {
-	validator *validator.Validate
-}
-
-func (cv *customValidator) Validate(i interface{}) error {
-	return cv.validator.Struct(i)
 }

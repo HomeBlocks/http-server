@@ -5,6 +5,7 @@ go 1.23.6
 require (
 	github.com/go-playground/validator/v10 v10.24.0
 	github.com/labstack/echo/v4 v4.13.3
+	github.com/pkg/errors v0.9.1
 	github.com/samber/lo v1.49.1
 	go.uber.org/zap v1.27.0
 )
