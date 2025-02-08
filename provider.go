@@ -1,13 +1,14 @@
-package http_server
+package server
 
 import (
 	"context"
+	"net/http"
+
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/samber/lo"
 	"go.uber.org/zap"
-	"net/http"
 )
 
 type Context interface {
@@ -110,13 +111,13 @@ func (s *Server) Echo() *echo.Echo {
 	return s.server
 }
 
-func NewServer(config Config, v *validator.Validate, logger *zap.Logger) *Server {
-	s := echo.New()
-	s.HideBanner = true
-	s.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
+func NewServer(config Config, validate *validator.Validate, logger *zap.Logger) *Server {
+	echoServer := echo.New()
+	echoServer.HideBanner = true
+	echoServer.Use(middleware.RequestLoggerWithConfig(middleware.RequestLoggerConfig{
 		LogURI:    true,
 		LogStatus: true,
-		LogValuesFunc: func(c echo.Context, v middleware.RequestLoggerValues) error {
+		LogValuesFunc: func(_ echo.Context, v middleware.RequestLoggerValues) error {
 			logger.Info("request",
 				zap.String("URI", v.URI),
 				zap.Int("status", v.Status),
@@ -126,12 +127,12 @@ func NewServer(config Config, v *validator.Validate, logger *zap.Logger) *Server
 		},
 		HandleError: true,
 	}))
-	s.Use(middleware.Recover())
-	s.Validator = &customValidator{validator: v}
+	echoServer.Use(middleware.Recover())
+	echoServer.Validator = &customValidator{validator: validate}
 
 	return &Server{
 		config: config,
-		server: s,
+		server: echoServer,
 		logger: logger,
 	}
 }
