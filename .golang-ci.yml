@@ -1,0 +1,64 @@
+run:
+  timeout: 5m
+
+output:
+  formats:
+    - format: colored-tab
+      path: stderr
+    - format: code-climate
+      path: ../gl-code-quality-report.json
+  print-issued-lines: false
+  sort-results: true
+
+linters:
+  enable-all: true
+  disable:
+    - exhaustruct
+    - exportloopref
+    - depguard
+
+linters-settings:
+  revive:
+    ignore-generated-header: true
+    severity: warning
+    rules:
+      - name: atomic
+      - name: line-length-limit
+        severity: error
+        arguments: [ 120 ]
+      - name: unhandled-error
+        arguments: [ "fmt.Printf", "myFunction" ]
+  gosec:
+    excludes:
+      - G115
+  errcheck:
+    check-blank: true
+    check-type-assertions: true
+    exclude-functions:
+      - strconv.ParseUint
+  funlen:
+    lines: 60
+    statements: 40
+  gocognit:
+    min-complexity: 15
+  gocyclo:
+    min-complexity: 15
+  varnamelen:
+    ignore-names:
+      - id
+    ignore-decls:
+      - ok bool
+  wrapcheck:
+    ignorePackageGlobs:
+      - github.com/pkg/errors
+      - golang.org/x/sync/errgroup
+      - google.golang.org/grpc/status
+
+issues:
+  uniq-by-line: true
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - funlen
+        - varnamelen
+        - gocognit

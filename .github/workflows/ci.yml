@@ -1,0 +1,73 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+env:
+  MIN_COVERAGE_PERCENT: 0
+
+jobs:
+  lint:
+    name: Lint Code
+    runs-on: ubuntu-latest
+    container:
+      image: golangci/golangci-lint:latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure Git Credentials
+        run: |
+          echo -e "machine github.com\n  login ${{ secrets.GH_USER }}\n  password ${{ secrets.GH_TOKEN }}" > ~/.netrc
+          chmod 600 ~/.netrc
+
+      - name: Clean and Tidy Modules
+        run: |
+          go clean -modcache
+          go mod tidy
+
+      - name: Run GolangCI-Lint
+        run: golangci-lint run --config .golang-ci.yml ./...
+
+  tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    container:
+      image: golang:1.23.6
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure Git Credentials
+        run: |
+          echo -e "machine github.com\n  login ${{ secrets.GH_USER }}\n  password ${{ secrets.GH_TOKEN }}" > ~/.netrc
+          chmod 600 ~/.netrc
+
+      - name: Install Dependencies
+        run: apt-get update && apt-get install -y bc
+
+      - name: Run Tests with Coverage
+        run: |
+          go test -cover -race -coverpkg=./... -coverprofile=.testCoverage.txt.tmp ./...
+          cat .testCoverage.txt.tmp | grep -v -E "mocks/|mock_|main.go|GO_COVERAGE_EXCLUDE_PATTERN" > .testCoverage.txt
+          go tool cover -func .testCoverage.txt | tee .testCoverageSummary.txt
+
+      - name: Check Coverage
+        run: |
+          coverage=$(grep total .testCoverageSummary.txt | awk '{print substr($3, 1, length($3)-1)}' | sed 's/%//')
+          if (( $(echo "$coverage < $MIN_COVERAGE_PERCENT" | bc -l) )); then
+            echo "Test coverage must be more than '$MIN_COVERAGE_PERCENT%'. It is '$coverage%' now"
+            exit 1
+          fi
+          echo "Test coverage is sufficient: '$coverage%'"
+
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: .testCoverageSummary.txt
