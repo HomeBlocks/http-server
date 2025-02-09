@@ -1,4 +1,4 @@
-module http-server
+module github.com/HomeBlocks/http-server
 
 go 1.23.6
 
